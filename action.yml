@@ -44,9 +44,12 @@ runs:
                 sudo mkdir -p /swift/$SWIFT_ID
                 sudo tar -xzf /swift/swift.tar.gz -C /swift/$SWIFT_ID --strip 1
                 echo "SWIFT_INSTALLATION=/swift/$SWIFT_ID/usr" >> $GITHUB_ENV
-                echo "$SWIFT_INSTALLATION/bin" >> $GITHUB_PATH
-                cat $GITHUB_PATH
+                echo "/swift/$SWIFT_ID/usr/bin" >> $GITHUB_PATH
 
         -   name: Check Swift
             shell: bash
-            run: swift --version
+            run: |
+                cat $GITHUB_PATH
+                echo $SWIFT_INSTALLATION
+                $SWIFT_INSTALLATION/bin/swift --version
+                swift --version
