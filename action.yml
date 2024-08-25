@@ -19,19 +19,15 @@ runs:
     using: composite
     steps:
         -   name: Cache Swift toolchain
+            id:   cache_swift
             uses: actions/cache@v2
             with:
                 path: "/swift/swift.tar.gz"
                 key: "swift:${{ inputs.swift-id }}"
 
-        -   name: Cache status
-            id:   cache_status
-            uses: andstor/file-existence-action@v1
-            with:
-                files: "/swift/swift.tar.gz"
-
         -   name: Download Swift
-            if: steps.cache_status.outputs.files_exists == 'false'
+            shell: bash
+            if: steps.cache_swift.outputs.cache-hit != 'true'
             env:
                 SWIFT_PREFIX: ${{ inputs.swift-prefix }}
                 SWIFT_ID: ${{ inputs.swift-id }}
@@ -40,6 +36,7 @@ runs:
                     --output /swift/swift.tar.gz
 
         -   name: Install Swift
+            shell: bash
             env:
                 SWIFT_ID: ${{ inputs.swift-id }}
             run: |
@@ -50,4 +47,5 @@ runs:
                 cat $GITHUB_PATH
 
         -   name: Check Swift
+            shell: bash
             run: swift --version
