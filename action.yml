@@ -32,6 +32,7 @@ runs:
                 SWIFT_PREFIX: ${{ inputs.swift-prefix }}
                 SWIFT_ID: ${{ inputs.swift-id }}
             run: |
+                mkdir -p /swift/$SWIFT_ID
                 curl https://download.swift.org/$SWIFT_PREFIX/$SWIFT_ID.tar.gz \
                     --output /swift/swift.tar.gz
 
