@@ -1,0 +1,53 @@
+name: "Swift install"
+description: "Install Swift"
+
+inputs:
+    swift-prefix:
+        description: "The URL prefix to download the Swift toolchain from, \
+            if installing Swift. The string should be a valid directory under \
+            download.swift.org, such as 'swift-5.10.1-release/ubuntu2404/swift-5.10.1-RELEASE'"
+        required: true
+        type: string
+
+    swift-id:
+        description: "The Swift toolchain version to install. This should be a full toolchain \
+          identifier, including the platform, like 'swift-5.10.1-RELEASE-ubuntu24.04'"
+        required: true
+        type: string
+
+runs:
+    using: composite
+    steps:
+        -   name: Cache Swift toolchain
+            uses: actions/cache@v2
+            with:
+                path: "/swift/swift.tar.gz"
+                key: "swift:${{ inputs.swift-id }}"
+
+        -   name: Cache status
+            id:   cache_status
+            uses: andstor/file-existence-action@v1
+            with:
+                files: "/swift/swift.tar.gz"
+
+        -   name: Download Swift
+            if: steps.cache_status.outputs.files_exists == 'false'
+            env:
+                SWIFT_PREFIX: ${{ inputs.swift-prefix }}
+                SWIFT_ID: ${{ inputs.swift-id }}
+            run: |
+                curl https://download.swift.org/$SWIFT_PREFIX/$SWIFT_ID.tar.gz \
+                    --output /swift/swift.tar.gz
+
+        -   name: Install Swift
+            env:
+                SWIFT_ID: ${{ inputs.swift-id }}
+            run: |
+                mkdir -p /swift/$SWIFT_ID
+                tar -xzf /swift/swift.tar.gz -C /swift/$SWIFT_ID --strip 1
+                echo "SWIFT_INSTALLATION=/swift/$SWIFT_ID/usr" >> $GITHUB_ENV
+                echo "$SWIFT_INSTALLATION/bin" >> $GITHUB_PATH
+                cat $GITHUB_PATH
+
+        -   name: Check Swift
+            run: swift --version
