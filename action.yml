@@ -45,6 +45,7 @@ runs:
             env:
                 SWIFT_ID: ${{ inputs.swift-id }}
             run: |
+                mkdir ~/swift/$SWIFT_ID
                 tar -xzf ~/swift/swift.tar.gz -C ~/swift/$SWIFT_ID --strip 1
                 echo "SWIFT_INSTALLATION=$HOME/swift/$SWIFT_ID/usr" >> $GITHUB_ENV
                 echo "$HOME/swift/$SWIFT_ID/usr/bin" >> $GITHUB_PATH
