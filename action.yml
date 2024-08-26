@@ -18,11 +18,16 @@ inputs:
 runs:
     using: composite
     steps:
+        -   name: Create Swift directory
+            shell: bash
+            run: |
+                mkdir ~/swift
+
         -   name: Cache Swift toolchain
             id:   cache_swift
             uses: actions/cache@v2
             with:
-                path: "${{ env.HOME }}/swift/swift.tar.gz"
+                path: "~/swift/swift.tar.gz"
                 key: "swift:${{ inputs.swift-id }}"
 
         -   name: Download Swift
@@ -32,17 +37,15 @@ runs:
                 SWIFT_PREFIX: ${{ inputs.swift-prefix }}
                 SWIFT_ID: ${{ inputs.swift-id }}
             run: |
-                mkdir -p $HOME/swift/$SWIFT_ID
                 curl https://download.swift.org/$SWIFT_PREFIX/$SWIFT_ID.tar.gz \
-                    --output $HOME/swift/swift.tar.gz
+                    --output ~/swift/swift.tar.gz
 
         -   name: Install Swift
             shell: bash
             env:
                 SWIFT_ID: ${{ inputs.swift-id }}
             run: |
-                mkdir -p $HOME/swift/$SWIFT_ID
-                tar -xzf $HOME/swift/swift.tar.gz -C $HOME/swift/$SWIFT_ID --strip 1
+                tar -xzf ~/swift/swift.tar.gz -C ~/swift/$SWIFT_ID --strip 1
                 echo "SWIFT_INSTALLATION=$HOME/swift/$SWIFT_ID/usr" >> $GITHUB_ENV
                 echo "$HOME/swift/$SWIFT_ID/usr/bin" >> $GITHUB_PATH
 
