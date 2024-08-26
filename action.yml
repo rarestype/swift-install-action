@@ -18,7 +18,7 @@ inputs:
 runs:
     using: composite
     steps:
-        -   name: Create Swift directory
+        -   name: Create installation directory
             shell: bash
             run: |
                 mkdir ~/swift
