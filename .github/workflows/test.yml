@@ -37,7 +37,7 @@ jobs:
                 uses: ./
                 with:
                     swift-prefix: "swift-6.0-release/xcode/swift-6.0-RELEASE"
-                    swift-id: "swift-6.0-RELEASE-osx"
+                    swift-id: "swift-6.0-RELEASE"
 
             -   name: Check Swift
                 run: swift --version

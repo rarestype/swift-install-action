@@ -61,6 +61,7 @@ runs:
                 path: "~/swift/swift.pkg"
                 key: "swift:${{ inputs.swift-id }}.pkg"
 
+        #   Please note, the `swift-id` does not include the `-osx` suffix!
         -   name: Download Swift (macOS)
             shell: bash
             if: runner.os == 'macOS' && steps.cache_swift_macos.outputs.cache-hit != 'true'
@@ -68,16 +69,19 @@ runs:
                 SWIFT_PREFIX: ${{ inputs.swift-prefix }}
                 SWIFT_ID: ${{ inputs.swift-id }}
             run: |
-                curl https://download.swift.org/$SWIFT_PREFIX/$SWIFT_ID.pkg \
+                curl https://download.swift.org/$SWIFT_PREFIX/$SWIFT_ID-osx.pkg \
                     --output ~/swift/swift.pkg
 
         -   name: Install Swift (macOS)
             shell: bash
             if: runner.os == 'macOS'
+            env:
+                SWIFT_ID: ${{ inputs.swift-id }}
             run: |
                 sudo installer -pkg ~/swift/swift.pkg -target /
                 ls /Library/Developer/Toolchains/
-                echo "SWIFT_INSTALLATION=/Library/Developer/Toolchains/swift.xctoolchain/usr" >> $GITHUB_ENV
+                ls /Library/Developer/Toolchains/$SWIFT_ID.xctoolchain
+                echo "SWIFT_INSTALLATION=/Library/Developer/Toolchains/$SWIFT_ID.xctoolchain/usr" >> $GITHUB_ENV
                 echo "TOOLCHAINS=$(plutil -extract CFBundleIdentifier raw \
                     /Library/Developer/Toolchains/swift.xctoolchain/Info.plist)" >> $GITHUB_ENV
 
