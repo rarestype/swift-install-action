@@ -23,13 +23,12 @@ runs:
             run: |
                 mkdir ~/swift
 
-        -   name: Cache Swift toolchain
+        -   name: Cache Swift toolchain (Linux)
             id:   cache_swift
             uses: actions/cache@v2
             with:
                 path: "~/swift/swift.tar.gz"
-                key: "swift:${{ inputs.swift-id }}"
-
+                key: "swift:${{ inputs.swift-id }}.tar.gz"
 
         -   name: Download Swift (Linux)
             shell: bash
@@ -53,6 +52,13 @@ runs:
                 echo "$HOME/swift/$SWIFT_ID/usr/bin" >> $GITHUB_PATH
 
 
+        -   name: Cache Swift toolchain (Linux)
+            id:   cache_swift
+            uses: actions/cache@v2
+            with:
+                path: "~/swift/swift.pkg"
+                key: "swift:${{ inputs.swift-id }}.pkg"
+
         -   name: Download Swift (macOS)
             shell: bash
             if: runner.os == 'macOS' && steps.cache_swift.outputs.cache-hit != 'true'
@@ -67,7 +73,7 @@ runs:
             shell: bash
             if: runner.os == 'macOS'
             run: |
-                sudo installer -pkg ~/swift.pkg -target /
+                sudo installer -pkg ~/swift/swift.pkg -target /
                 ls /Library/Developer/Toolchains/swift.xctoolchain/
                 echo "SWIFT_INSTALLATION=/Library/Developer/Toolchains/swift.xctoolchain/usr" >> $GITHUB_ENV
                 echo "TOOLCHAINS=$(plutil -extract CFBundleIdentifier raw \
