@@ -13,6 +13,9 @@ jobs:
         name: Ubuntu 24.04
 
         steps:
+            -   name: Checkout repository
+                uses: actions/checkout@v3
+
             -   name: Install Swift
                 uses: ./
                 with:
@@ -27,6 +30,9 @@ jobs:
         name: macOS
 
         steps:
+            -   name: Checkout repository
+                uses: actions/checkout@v3
+
             -   name: Install Swift
                 uses: ./
                 with:
