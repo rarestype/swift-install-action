@@ -14,7 +14,7 @@ jobs:
 
         steps:
             -   name: Install Swift
-                uses: tayloraswift/swift-install-action@master
+                uses: ./
                 with:
                     swift-prefix: "swift-6.0-release/ubuntu2404/swift-6.0-RELEASE"
                     swift-id: "swift-6.0-RELEASE-ubuntu24.04"
@@ -28,7 +28,7 @@ jobs:
 
         steps:
             -   name: Install Swift
-                uses: tayloraswift/swift-install-action@master
+                uses: ./
                 with:
                     swift-prefix: "swift-6.0-release/xcode/swift-6.0-RELEASE"
                     swift-id: "swift-6.0-RELEASE-osx"
