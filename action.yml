@@ -24,7 +24,8 @@ runs:
                 mkdir ~/swift
 
         -   name: Cache Swift toolchain (Linux)
-            id:   cache_swift
+            id:   cache_swift_linux
+            if: runner.os == 'Linux'
             uses: actions/cache@v2
             with:
                 path: "~/swift/swift.tar.gz"
@@ -32,7 +33,7 @@ runs:
 
         -   name: Download Swift (Linux)
             shell: bash
-            if: runner.os == 'Linux' && steps.cache_swift.outputs.cache-hit != 'true'
+            if: runner.os == 'Linux' && steps.cache_swift_linux.outputs.cache-hit != 'true'
             env:
                 SWIFT_PREFIX: ${{ inputs.swift-prefix }}
                 SWIFT_ID: ${{ inputs.swift-id }}
@@ -52,8 +53,9 @@ runs:
                 echo "$HOME/swift/$SWIFT_ID/usr/bin" >> $GITHUB_PATH
 
 
-        -   name: Cache Swift toolchain (Linux)
-            id:   cache_swift
+        -   name: Cache Swift toolchain (macOS)
+            id:   cache_swift_macos
+            if: runner.os == 'macOS'
             uses: actions/cache@v2
             with:
                 path: "~/swift/swift.pkg"
@@ -61,7 +63,7 @@ runs:
 
         -   name: Download Swift (macOS)
             shell: bash
-            if: runner.os == 'macOS' && steps.cache_swift.outputs.cache-hit != 'true'
+            if: runner.os == 'macOS' && steps.cache_swift_macos.outputs.cache-hit != 'true'
             env:
                 SWIFT_PREFIX: ${{ inputs.swift-prefix }}
                 SWIFT_ID: ${{ inputs.swift-id }}
