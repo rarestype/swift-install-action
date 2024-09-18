@@ -13,11 +13,31 @@ jobs:
         name: Ubuntu 24.04
 
         steps:
+            -   name: Checkout repository
+                uses: actions/checkout@v3
+
             -   name: Install Swift
-                uses: tayloraswift/swift-install-action@master
+                uses: ./
                 with:
-                    swift-prefix: "swift-5.10.1-release/ubuntu2404/swift-5.10.1-RELEASE"
-                    swift-id: "swift-5.10.1-RELEASE-ubuntu24.04"
+                    swift-prefix: "swift-6.0-release/ubuntu2404/swift-6.0-RELEASE"
+                    swift-id: "swift-6.0-RELEASE-ubuntu24.04"
+
+            -   name: Check Swift
+                run: swift --version
+
+    macos:
+        runs-on: macos-14
+        name: macOS
+
+        steps:
+            -   name: Checkout repository
+                uses: actions/checkout@v3
+
+            -   name: Install Swift
+                uses: ./
+                with:
+                    swift-prefix: "swift-6.0-release/xcode/swift-6.0-RELEASE"
+                    swift-id: "swift-6.0-RELEASE"
 
             -   name: Check Swift
                 run: swift --version

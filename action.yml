@@ -23,16 +23,19 @@ runs:
             run: |
                 mkdir ~/swift
 
-        -   name: Cache Swift toolchain
-            id:   cache_swift
+        ### Linux-specific steps
+
+        -   name: Cache Swift toolchain (Linux)
+            id:   cache_swift_linux
+            if: runner.os == 'Linux'
             uses: actions/cache@v2
             with:
                 path: "~/swift/swift.tar.gz"
-                key: "swift:${{ inputs.swift-id }}"
+                key: "swift:${{ inputs.swift-id }}.tar.gz"
 
-        -   name: Download Swift
+        -   name: Download Swift (Linux)
             shell: bash
-            if: steps.cache_swift.outputs.cache-hit != 'true'
+            if: runner.os == 'Linux' && steps.cache_swift_linux.outputs.cache-hit != 'true'
             env:
                 SWIFT_PREFIX: ${{ inputs.swift-prefix }}
                 SWIFT_ID: ${{ inputs.swift-id }}
@@ -40,8 +43,9 @@ runs:
                 curl https://download.swift.org/$SWIFT_PREFIX/$SWIFT_ID.tar.gz \
                     --output ~/swift/swift.tar.gz
 
-        -   name: Install Swift
+        -   name: Install Swift (Linux)
             shell: bash
+            if: runner.os == 'Linux'
             env:
                 SWIFT_ID: ${{ inputs.swift-id }}
             run: |
@@ -49,6 +53,40 @@ runs:
                 tar -xzf ~/swift/swift.tar.gz -C ~/swift/$SWIFT_ID --strip 1
                 echo "SWIFT_INSTALLATION=$HOME/swift/$SWIFT_ID/usr" >> $GITHUB_ENV
                 echo "$HOME/swift/$SWIFT_ID/usr/bin" >> $GITHUB_PATH
+
+        ### macOS-specific steps
+        ### Please note, on macOS, the `swift-id` does not include the `-osx` suffix!
+
+        -   name: Cache Swift toolchain (macOS)
+            id:   cache_swift_macos
+            if: runner.os == 'macOS'
+            uses: actions/cache@v2
+            with:
+                path: "~/swift/swift.pkg"
+                key: "swift:${{ inputs.swift-id }}.pkg"
+
+        -   name: Download Swift (macOS)
+            shell: bash
+            if: runner.os == 'macOS' && steps.cache_swift_macos.outputs.cache-hit != 'true'
+            env:
+                SWIFT_PREFIX: ${{ inputs.swift-prefix }}
+                SWIFT_ID: ${{ inputs.swift-id }}
+            run: |
+                curl https://download.swift.org/$SWIFT_PREFIX/$SWIFT_ID-osx.pkg \
+                    --output ~/swift/swift.pkg
+
+        -   name: Install Swift (macOS)
+            shell: bash
+            if: runner.os == 'macOS'
+            env:
+                SWIFT_ID: ${{ inputs.swift-id }}
+            run: |
+                sudo installer -pkg ~/swift/swift.pkg -target /
+                echo "SWIFT_INSTALLATION=/Library/Developer/Toolchains/$SWIFT_ID.xctoolchain/usr" >> $GITHUB_ENV
+                echo "TOOLCHAINS=$(plutil -extract CFBundleIdentifier raw \
+                    /Library/Developer/Toolchains/$SWIFT_ID.xctoolchain/Info.plist)" >> $GITHUB_ENV
+
+        ### End platform-specific steps
 
         -   name: Check Swift
             shell: bash
