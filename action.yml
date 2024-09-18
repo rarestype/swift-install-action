@@ -76,7 +76,7 @@ runs:
             if: runner.os == 'macOS'
             run: |
                 sudo installer -pkg ~/swift/swift.pkg -target /
-                ls /Library/Developer/Toolchains/swift.xctoolchain/
+                ls /Library/Developer/Toolchains/
                 echo "SWIFT_INSTALLATION=/Library/Developer/Toolchains/swift.xctoolchain/usr" >> $GITHUB_ENV
                 echo "TOOLCHAINS=$(plutil -extract CFBundleIdentifier raw \
                     /Library/Developer/Toolchains/swift.xctoolchain/Info.plist)" >> $GITHUB_ENV
