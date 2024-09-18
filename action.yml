@@ -84,7 +84,7 @@ runs:
                 sudo installer -pkg ~/swift/swift.pkg -target /
                 echo "SWIFT_INSTALLATION=/Library/Developer/Toolchains/$SWIFT_ID.xctoolchain/usr" >> $GITHUB_ENV
                 echo "TOOLCHAINS=$(plutil -extract CFBundleIdentifier raw \
-                    /Library/Developer/Toolchains/swift.xctoolchain/Info.plist)" >> $GITHUB_ENV
+                    /Library/Developer/Toolchains/$SWIFT_ID.xctoolchain/Info.plist)" >> $GITHUB_ENV
 
         ### End platform-specific steps
 
