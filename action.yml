@@ -30,9 +30,10 @@ runs:
                 path: "~/swift/swift.tar.gz"
                 key: "swift:${{ inputs.swift-id }}"
 
-        -   name: Download Swift
+
+        -   name: Download Swift (Linux)
             shell: bash
-            if: steps.cache_swift.outputs.cache-hit != 'true'
+            if: runner.os == 'Linux' && steps.cache_swift.outputs.cache-hit != 'true'
             env:
                 SWIFT_PREFIX: ${{ inputs.swift-prefix }}
                 SWIFT_ID: ${{ inputs.swift-id }}
@@ -40,8 +41,9 @@ runs:
                 curl https://download.swift.org/$SWIFT_PREFIX/$SWIFT_ID.tar.gz \
                     --output ~/swift/swift.tar.gz
 
-        -   name: Install Swift
+        -   name: Install Swift (Linux)
             shell: bash
+            if: runner.os == 'Linux'
             env:
                 SWIFT_ID: ${{ inputs.swift-id }}
             run: |
@@ -49,6 +51,28 @@ runs:
                 tar -xzf ~/swift/swift.tar.gz -C ~/swift/$SWIFT_ID --strip 1
                 echo "SWIFT_INSTALLATION=$HOME/swift/$SWIFT_ID/usr" >> $GITHUB_ENV
                 echo "$HOME/swift/$SWIFT_ID/usr/bin" >> $GITHUB_PATH
+
+
+        -   name: Download Swift (macOS)
+            shell: bash
+            if: runner.os == 'macOS' && steps.cache_swift.outputs.cache-hit != 'true'
+            env:
+                SWIFT_PREFIX: ${{ inputs.swift-prefix }}
+                SWIFT_ID: ${{ inputs.swift-id }}
+            run: |
+                curl https://download.swift.org/$SWIFT_PREFIX/$SWIFT_ID.pkg \
+                    --output ~/swift/swift.pkg
+
+        -   name: Install Swift (macOS)
+            shell: bash
+            if: runner.os == 'macOS'
+            run: |
+                sudo installer -pkg ~/swift.pkg -target /
+                ls /Library/Developer/Toolchains/swift.xctoolchain/
+                echo "SWIFT_INSTALLATION=/Library/Developer/Toolchains/swift.xctoolchain/usr" >> $GITHUB_ENV
+                echo "TOOLCHAINS=$(plutil -extract CFBundleIdentifier raw \
+                    /Library/Developer/Toolchains/swift.xctoolchain/Info.plist)" >> $GITHUB_ENV
+
 
         -   name: Check Swift
             shell: bash
