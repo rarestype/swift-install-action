@@ -28,7 +28,7 @@ runs:
         -   name: Cache Swift toolchain (Linux)
             id:   cache_swift_linux
             if: runner.os == 'Linux'
-            uses: actions/cache@v2
+            uses: actions/cache@v4
             with:
                 path: "~/swift/swift.tar.gz"
                 key: "swift:${{ inputs.swift-id }}.tar.gz"
@@ -60,7 +60,7 @@ runs:
         -   name: Cache Swift toolchain (macOS)
             id:   cache_swift_macos
             if: runner.os == 'macOS'
-            uses: actions/cache@v2
+            uses: actions/cache@v4
             with:
                 path: "~/swift/swift.pkg"
                 key: "swift:${{ inputs.swift-id }}.pkg"
