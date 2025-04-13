@@ -19,8 +19,8 @@ jobs:
             -   name: Install Swift
                 uses: ./
                 with:
-                    swift-prefix: "swift-6.0-release/ubuntu2404/swift-6.0-RELEASE"
-                    swift-id: "swift-6.0-RELEASE-ubuntu24.04"
+                    swift-prefix: "swift-6.1-release/ubuntu2404/swift-6.1-RELEASE"
+                    swift-id: "swift-6.1-RELEASE-ubuntu24.04"
 
             -   name: Check Swift
                 run: swift --version
@@ -36,8 +36,8 @@ jobs:
             -   name: Install Swift
                 uses: ./
                 with:
-                    swift-prefix: "swift-6.0-release/xcode/swift-6.0-RELEASE"
-                    swift-id: "swift-6.0-RELEASE"
+                    swift-prefix: "swift-6.1-release/xcode/swift-6.1-RELEASE"
+                    swift-id: "swift-6.1-RELEASE"
 
             -   name: Check Swift
                 run: swift --version
