@@ -37,7 +37,7 @@ linux:
 
     steps:
         -   name: Install Swift
-            uses: tayloraswift/swift-install-action@master
+            uses: rarestype/swift-install-action@master
             with:
                 swift-prefix: "swift-6.0-release/ubuntu2404/swift-6.0-RELEASE"
                 swift-id: "swift-6.0-RELEASE-ubuntu24.04"
@@ -55,7 +55,7 @@ macos:
 
     steps:
         -   name: Install Swift
-            uses: tayloraswift/swift-install-action@master
+            uses: rarestype/swift-install-action@master
             with:
                 swift-prefix: "swift-6.0-release/xcode/swift-6.0-RELEASE"
                 swift-id: "swift-6.0-RELEASE"

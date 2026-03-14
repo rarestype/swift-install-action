@@ -5,13 +5,13 @@ inputs:
     swift-prefix:
         description: "The URL prefix to download the Swift toolchain from, \
             if installing Swift. The string should be a valid directory under \
-            download.swift.org, such as 'swift-5.10.1-release/ubuntu2404/swift-5.10.1-RELEASE'"
+            download.swift.org, such as 'swift-6.2.4-release/ubuntu2404/swift-6.2.4-RELEASE'"
         required: true
         type: string
 
     swift-id:
         description: "The Swift toolchain version to install. This should be a full toolchain \
-          identifier, including the platform, like 'swift-5.10.1-RELEASE-ubuntu24.04'"
+          identifier, including the platform, like 'swift-6.2.4-RELEASE-ubuntu24.04'"
         required: true
         type: string
 
