@@ -1,5 +1,8 @@
 name: "Swift install"
 description: "Install Swift"
+branding:
+    icon: award
+    color: purple
 
 inputs:
     swift-prefix:
