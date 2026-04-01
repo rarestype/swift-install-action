@@ -5,22 +5,70 @@ branding:
     color: purple
 
 inputs:
+    swift-release:
+        description: "the identifier of a Swift release toolchain, such as '6.3-RELEASE', \
+            if using automatic parameter configuration"
+        required: false
+        type: string
+
     swift-prefix:
         description: "The URL prefix to download the Swift toolchain from, \
             if installing Swift. The string should be a valid directory under \
             download.swift.org, such as 'swift-6.2.4-release/ubuntu2404/swift-6.2.4-RELEASE'"
-        required: true
+        required: false
         type: string
 
     swift-id:
         description: "The Swift toolchain version to install. This should be a full toolchain \
           identifier, including the platform, like 'swift-6.2.4-RELEASE-ubuntu24.04'"
-        required: true
+        required: false
         type: string
 
 runs:
     using: composite
     steps:
+        -   name: Select Swift toolchain
+            id: parameters
+            shell: bash
+            env:
+                SWIFT_VERSION: ${{ inputs.swift-release }}
+                SWIFT_PREFIX: ${{ inputs.swift-prefix }}
+                SWIFT_ID: ${{ inputs.swift-id }}
+            run: |
+                if [[ -n "$SWIFT_VERSION" ]]; then
+                    if [[ -n "$SWIFT_PREFIX" || -n "$SWIFT_ID" ]]; then
+                        echo "::error:: Cannot combine 'swift-release' with 'swift-prefix' or 'swift-id'"
+                        exit 1
+                    fi
+
+                    if [[ "$RUNNER_OS" == "Linux" ]]; then
+                        if ! command -v lsb_release &> /dev/null; then
+                            echo "::error:: Auto-configuration requires 'lsb_release', which was not found!"
+                            exit 1
+                        fi
+
+                        UBUNTU_VERSION="ubuntu$(lsb_release -rs)"
+                        SWIFT_PLATFORM="${UBUNTU_VERSION}-$(uname -m)"
+                        SWIFT_PLATFORM="${SWIFT_PLATFORM%-x86_64}"
+
+                        SWIFT_PREFIX="swift-${SWIFT_VERSION,,}/${SWIFT_PLATFORM//[.]/}/swift-${SWIFT_VERSION}"
+                        SWIFT_ID="swift-${SWIFT_VERSION}-${SWIFT_PLATFORM}"
+
+                    elif [[ "$RUNNER_OS" == "macOS" ]]; then
+                        SWIFT_PREFIX="swift-${SWIFT_VERSION,,}/xcode/swift-${SWIFT_VERSION}"
+                        SWIFT_ID="swift-${SWIFT_VERSION}"
+                    else
+                        echo "::error:: Auto-configuration not supported for $RUNNER_OS"
+                        exit 1
+                    fi
+                elif [[ -z "$SWIFT_PREFIX" || -z "$SWIFT_ID" ]]; then
+                    echo "::error:: You must provide either 'swift-release' or both 'swift-prefix' and 'swift-id'"
+                    exit 1
+                fi
+
+                echo "swift-prefix=$SWIFT_PREFIX" >> $GITHUB_OUTPUT
+                echo "swift-id=$SWIFT_ID" >> $GITHUB_OUTPUT
+
         -   name: Create installation directory
             shell: bash
             run: |
@@ -34,14 +82,14 @@ runs:
             uses: actions/cache@v5
             with:
                 path: "~/swift/swift.tar.gz"
-                key: "swift:${{ inputs.swift-id }}.tar.gz"
+                key: "swift:${{ steps.parameters.outputs.swift-id }}.tar.gz"
 
         -   name: Download Swift (Linux)
             shell: bash
             if: runner.os == 'Linux' && steps.cache_swift_linux.outputs.cache-hit != 'true'
             env:
-                SWIFT_PREFIX: ${{ inputs.swift-prefix }}
-                SWIFT_ID: ${{ inputs.swift-id }}
+                SWIFT_PREFIX: ${{ steps.parameters.outputs.swift-prefix }}
+                SWIFT_ID: ${{ steps.parameters.outputs.swift-id }}
             run: |
                 curl https://download.swift.org/$SWIFT_PREFIX/$SWIFT_ID.tar.gz \
                     --output ~/swift/swift.tar.gz
@@ -50,7 +98,7 @@ runs:
             shell: bash
             if: runner.os == 'Linux'
             env:
-                SWIFT_ID: ${{ inputs.swift-id }}
+                SWIFT_ID: ${{ steps.parameters.outputs.swift-id }}
             run: |
                 mkdir ~/swift/$SWIFT_ID
                 tar -xzf ~/swift/swift.tar.gz -C ~/swift/$SWIFT_ID --strip 1
@@ -66,14 +114,14 @@ runs:
             uses: actions/cache@v5
             with:
                 path: "~/swift/swift.pkg"
-                key: "swift:${{ inputs.swift-id }}.pkg"
+                key: "swift:${{ steps.parameters.outputs.swift-id }}.pkg"
 
         -   name: Download Swift (macOS)
             shell: bash
             if: runner.os == 'macOS' && steps.cache_swift_macos.outputs.cache-hit != 'true'
             env:
-                SWIFT_PREFIX: ${{ inputs.swift-prefix }}
-                SWIFT_ID: ${{ inputs.swift-id }}
+                SWIFT_PREFIX: ${{ steps.parameters.outputs.swift-prefix }}
+                SWIFT_ID: ${{ steps.parameters.outputs.swift-id }}
             run: |
                 curl https://download.swift.org/$SWIFT_PREFIX/$SWIFT_ID-osx.pkg \
                     --output ~/swift/swift.pkg
@@ -82,7 +130,7 @@ runs:
             shell: bash
             if: runner.os == 'macOS'
             env:
-                SWIFT_ID: ${{ inputs.swift-id }}
+                SWIFT_ID: ${{ steps.parameters.outputs.swift-id }}
             run: |
                 sudo installer -pkg ~/swift/swift.pkg -target /
                 echo "SWIFT_INSTALLATION=/Library/Developer/Toolchains/$SWIFT_ID.xctoolchain/usr" >> $GITHUB_ENV

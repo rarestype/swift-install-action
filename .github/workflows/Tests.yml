@@ -1,0 +1,69 @@
+name: Tests
+
+on:
+    push:
+        branches: [ master ]
+
+    pull_request:
+        branches: [ master ]
+
+jobs:
+    Autoconfigure:
+        runs-on: ${{ matrix.platform.runner }}
+        name: ${{ matrix.platform.name }} (${{ matrix.platform.architecture }})
+        strategy:
+            matrix:
+                platform:
+                    -   architecture: aarch64
+                        runner: macos-latest
+                        name: macOS
+
+                    -   architecture: aarch64
+                        runner: ubuntu-24.04-arm
+                        name: Ubuntu 24.04
+
+                    -   architecture: x86_64
+                        runner: ubuntu-24.04
+                        name: Ubuntu 24.04
+        steps:
+            -   name: 💖 Checkout repository 💖
+                uses: actions/checkout@v6
+
+            -   name: 💖 Install Swift 💖
+                uses: ./
+                with:
+                    swift-release: "6.3-RELEASE"
+
+            -   name: 💖 Check Swift 💖
+                run: swift --version
+
+    Linux:
+        runs-on: ubuntu-24.04
+        name: Ubuntu 24.04
+        steps:
+            -   name: 💖 Checkout repository 💖
+                uses: actions/checkout@v6
+
+            -   name: 💖 Install Swift 💖
+                uses: ./
+                with:
+                    swift-prefix: "swift-6.3-release/ubuntu2404/swift-6.3-RELEASE"
+                    swift-id: "swift-6.3-RELEASE-ubuntu24.04"
+
+            -   name: 💖 Check Swift 💖
+                run: swift --version
+
+    macOS:
+        runs-on: macos-latest
+        steps:
+            -   name: 💖 Checkout repository 💖
+                uses: actions/checkout@v6
+
+            -   name: 💖 Install Swift 💖
+                uses: ./
+                with:
+                    swift-prefix: "swift-6.3-release/xcode/swift-6.3-RELEASE"
+                    swift-id: "swift-6.3-RELEASE"
+
+            -   name: 💖 Check Swift 💖
+                run: swift --version
