@@ -55,7 +55,9 @@ runs:
                         SWIFT_ID="swift-${SWIFT_VERSION}-${SWIFT_PLATFORM}"
 
                     elif [[ "$RUNNER_OS" == "macOS" ]]; then
-                        SWIFT_PREFIX="swift-${SWIFT_VERSION,,}/xcode/swift-${SWIFT_VERSION}"
+                        # bash 4 not available on macOS
+                        SWIFT_BRANCH="swift-$(echo "$SWIFT_VERSION" | tr '[:upper:]' '[:lower:]')"
+                        SWIFT_PREFIX="${SWIFT_BRANCH}/xcode/swift-${SWIFT_VERSION}"
                         SWIFT_ID="swift-${SWIFT_VERSION}"
                     else
                         echo "::error:: Auto-configuration not supported for $RUNNER_OS"
