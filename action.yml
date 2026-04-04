@@ -111,7 +111,7 @@ runs:
                 echo "${SWIFT_TOOLCHAIN}/usr/bin" >> "$GITHUB_PATH"
 
                 # expose Swift's C++ and Block headers for libraries like IndexStoreDB
-                echo "CPLUS_INCLUDE_PATH=${CPLUS_INCLUDE_PATH}:\
+                echo "CPLUS_INCLUDE_PATH=${CPLUS_INCLUDE_PATH:+${CPLUS_INCLUDE_PATH}:}\
                 ${SWIFT_TOOLCHAIN}/usr/lib/swift:\
                 ${SWIFT_TOOLCHAIN}/usr/lib/swift/Block" >> "$GITHUB_ENV"
 
