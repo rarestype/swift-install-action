@@ -93,8 +93,8 @@ runs:
                 SWIFT_PREFIX: ${{ steps.parameters.outputs.swift-prefix }}
                 SWIFT_ID: ${{ steps.parameters.outputs.swift-id }}
             run: |
-                curl https://download.swift.org/$SWIFT_PREFIX/$SWIFT_ID.tar.gz \
-                    --output ~/swift/swift.tar.gz
+                curl "https://download.swift.org/${SWIFT_PREFIX}/${SWIFT_ID}.tar.gz" \
+                    --output "${HOME}/swift/swift.tar.gz"
 
         -   name: Install Swift (Linux)
             shell: bash
@@ -102,10 +102,18 @@ runs:
             env:
                 SWIFT_ID: ${{ steps.parameters.outputs.swift-id }}
             run: |
-                mkdir ~/swift/$SWIFT_ID
-                tar -xzf ~/swift/swift.tar.gz -C ~/swift/$SWIFT_ID --strip 1
-                echo "SWIFT_INSTALLATION=$HOME/swift/$SWIFT_ID/usr" >> $GITHUB_ENV
-                echo "$HOME/swift/$SWIFT_ID/usr/bin" >> $GITHUB_PATH
+                SWIFT_TOOLCHAIN="${HOME}/swift/${SWIFT_ID}"
+
+                mkdir "$SWIFT_TOOLCHAIN"
+                tar -xzf "${HOME}/swift/swift.tar.gz" -C "$SWIFT_TOOLCHAIN" --strip 1
+
+                echo "SWIFT_INSTALLATION=${SWIFT_TOOLCHAIN}/usr" >> "$GITHUB_ENV"
+                echo "${SWIFT_TOOLCHAIN}/usr/bin" >> "$GITHUB_PATH"
+
+                # expose Swift's C++ and Block headers for libraries like IndexStoreDB
+                echo "CPLUS_INCLUDE_PATH=${CPLUS_INCLUDE_PATH}:\
+                ${SWIFT_TOOLCHAIN}/usr/lib/swift:\
+                ${SWIFT_TOOLCHAIN}/usr/lib/swift/Block" >> "$GITHUB_ENV"
 
         ### macOS-specific steps
         ### Please note, on macOS, the `swift-id` does not include the `-osx` suffix!
@@ -125,8 +133,8 @@ runs:
                 SWIFT_PREFIX: ${{ steps.parameters.outputs.swift-prefix }}
                 SWIFT_ID: ${{ steps.parameters.outputs.swift-id }}
             run: |
-                curl https://download.swift.org/$SWIFT_PREFIX/$SWIFT_ID-osx.pkg \
-                    --output ~/swift/swift.pkg
+                curl "https://download.swift.org/${SWIFT_PREFIX}/${SWIFT_ID}-osx.pkg" \
+                    --output "${HOME}/swift/swift.pkg"
 
         -   name: Install Swift (macOS)
             shell: bash
@@ -134,16 +142,19 @@ runs:
             env:
                 SWIFT_ID: ${{ steps.parameters.outputs.swift-id }}
             run: |
-                sudo installer -pkg ~/swift/swift.pkg -target /
-                echo "SWIFT_INSTALLATION=/Library/Developer/Toolchains/$SWIFT_ID.xctoolchain/usr" >> $GITHUB_ENV
-                echo "TOOLCHAINS=$(plutil -extract CFBundleIdentifier raw \
-                    /Library/Developer/Toolchains/$SWIFT_ID.xctoolchain/Info.plist)" >> $GITHUB_ENV
+                sudo installer -pkg "${HOME}/swift/swift.pkg" -target /
+
+                SWIFT_TOOLCHAIN="/Library/Developer/Toolchains/${SWIFT_ID}.xctoolchain"
+                SWIFT_BUNDLE_ID=$(\
+                    plutil -extract CFBundleIdentifier raw "${SWIFT_TOOLCHAIN}/Info.plist")
+
+                echo "SWIFT_INSTALLATION=${SWIFT_TOOLCHAIN}/usr" >> "$GITHUB_ENV"
+                echo "TOOLCHAINS=${SWIFT_BUNDLE_ID}" >> "$GITHUB_ENV"
 
         ### End platform-specific steps
 
         -   name: Check Swift
             shell: bash
             run: |
-                $SWIFT_INSTALLATION/bin/swift --version
-                cat $GITHUB_PATH
+                "${SWIFT_INSTALLATION}/bin/swift" --version
                 swift --version
