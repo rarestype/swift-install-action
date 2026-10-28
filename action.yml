@@ -25,10 +25,10 @@ inputs:
         type: string
 
     swift-overlay:
-        description: "On Linux, the tag of a rarestype/swift release, such as \
-            'swift-6.4.1-RELEASE-81bd22795', whose compiler and standard library replace \
-            the installed toolchain’s. It must be built for the toolchain being installed, \
-            and this action must know its checksums"
+        description: "On Linux, a rarestype/swift release, such as '6.4.1-RELEASE-81bd22795' \
+            for the release tagged 'swift-6.4.1-RELEASE-81bd22795', whose compiler and \
+            standard library replace the installed toolchain’s. It must be built for the \
+            toolchain being installed, and this action must know its checksums"
         required: false
         type: string
 
@@ -85,8 +85,15 @@ runs:
                         echo "::error:: 'swift-overlay' is only available on Linux"
                         exit 1
                     fi
-                    # a release tag is the toolchain’s identifier, followed by a commit hash
-                    if [[ "$SWIFT_ID" != "${SWIFT_OVERLAY%-*}-"* ]]; then
+                    # like 'swift-release', the release is named without the 'swift-' prefix
+                    if [[ "$SWIFT_OVERLAY" == swift-* ]]; then
+                        echo "::error:: Write 'swift-overlay' without the 'swift-' prefix, \
+                like '${SWIFT_OVERLAY#swift-}'"
+                        exit 1
+                    fi
+                    # a release is the Swift release it was built from, followed by a commit
+                    # hash
+                    if [[ "$SWIFT_ID" != "swift-${SWIFT_OVERLAY%-*}-"* ]]; then
                         echo "::error:: '$SWIFT_OVERLAY' was not built for '$SWIFT_ID'"
                         exit 1
                     fi
@@ -94,10 +101,10 @@ runs:
                     SWIFT_OVERLAY_ARCHITECTURE="$(uname -m)"
                     # the checksums of every release this action can install, from its notes
                     case "${SWIFT_OVERLAY}/${SWIFT_OVERLAY_ARCHITECTURE}" in
-                    swift-6.4.1-RELEASE-81bd22795/x86_64)
+                    6.4.1-RELEASE-81bd22795/x86_64)
                         SWIFT_OVERLAY_SHA256='f5f37179a8043c9e4451a7a4b867226e8356b7348eff976239ba5d08aeb8717b'
                         ;;
-                    swift-6.4.1-RELEASE-81bd22795/aarch64)
+                    6.4.1-RELEASE-81bd22795/aarch64)
                         SWIFT_OVERLAY_SHA256='2ee97a73978013f72759b1256bec9d85472a378c9cd835203179a21ee13887e5'
                         ;;
                     *)
@@ -107,7 +114,7 @@ runs:
                     esac
 
                     SWIFT_OVERLAY_URL="https://github.com/rarestype/swift/releases/download/\
-                ${SWIFT_OVERLAY}/${SWIFT_OVERLAY%-*}-linux-${SWIFT_OVERLAY_ARCHITECTURE}.tar.gz"
+                swift-${SWIFT_OVERLAY}/swift-${SWIFT_OVERLAY%-*}-linux-${SWIFT_OVERLAY_ARCHITECTURE}.tar.gz"
 
                     echo "swift-overlay-url=$SWIFT_OVERLAY_URL" >> $GITHUB_OUTPUT
                     echo "swift-overlay-sha256=$SWIFT_OVERLAY_SHA256" >> $GITHUB_OUTPUT
