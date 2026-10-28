@@ -32,7 +32,7 @@ jobs:
             -   name: 💖 Install Swift 💖
                 uses: ./
                 with:
-                    swift-release: "6.3-RELEASE"
+                    swift-release: 6.4.1-RELEASE
 
             -   name: 💖 Check Swift 💖
                 run: swift --version
@@ -91,7 +91,7 @@ jobs:
             -   name: 💖 Install Swift 💖
                 uses: ./
                 with:
-                    swift-release: "6.4.1-RELEASE"
+                    swift-release: 6.4.1-RELEASE
                     swift-overlay: ${{ matrix.overlay }}
 
             -   name: 💖 Checkout reproducers 💖
