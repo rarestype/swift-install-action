@@ -82,7 +82,7 @@ jobs:
                     -   architecture: x86_64
                         runner: ubuntu-24.04
                 overlay:
-                    -   'swift-6.4.1-RELEASE-81bd22795'
+                    -   '6.4.1-RELEASE-81bd22795'
                     -   ''
         steps:
             -   name: 💖 Checkout repository 💖
