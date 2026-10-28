@@ -24,6 +24,14 @@ inputs:
         required: false
         type: string
 
+    swift-overlay:
+        description: "On Linux, the tag of a rarestype/swift release, such as \
+            'swift-6.4.1-RELEASE-81bd22795', whose compiler and standard library replace \
+            the installed toolchain’s. It must be built for the toolchain being installed, \
+            and this action must know its checksums"
+        required: false
+        type: string
+
 runs:
     using: composite
     steps:
@@ -34,6 +42,7 @@ runs:
                 SWIFT_VERSION: ${{ inputs.swift-release }}
                 SWIFT_PREFIX: ${{ inputs.swift-prefix }}
                 SWIFT_ID: ${{ inputs.swift-id }}
+                SWIFT_OVERLAY: ${{ inputs.swift-overlay }}
             run: |
                 if [[ -n "$SWIFT_VERSION" ]]; then
                     if [[ -n "$SWIFT_PREFIX" || -n "$SWIFT_ID" ]]; then
@@ -70,6 +79,39 @@ runs:
 
                 echo "swift-prefix=$SWIFT_PREFIX" >> $GITHUB_OUTPUT
                 echo "swift-id=$SWIFT_ID" >> $GITHUB_OUTPUT
+
+                if [[ -n "$SWIFT_OVERLAY" ]]; then
+                    if [[ "$RUNNER_OS" != "Linux" ]]; then
+                        echo "::error:: 'swift-overlay' is only available on Linux"
+                        exit 1
+                    fi
+                    # a release tag is the toolchain’s identifier, followed by a commit hash
+                    if [[ "$SWIFT_ID" != "${SWIFT_OVERLAY%-*}-"* ]]; then
+                        echo "::error:: '$SWIFT_OVERLAY' was not built for '$SWIFT_ID'"
+                        exit 1
+                    fi
+
+                    SWIFT_OVERLAY_ARCHITECTURE="$(uname -m)"
+                    # the checksums of every release this action can install, from its notes
+                    case "${SWIFT_OVERLAY}/${SWIFT_OVERLAY_ARCHITECTURE}" in
+                    swift-6.4.1-RELEASE-81bd22795/x86_64)
+                        SWIFT_OVERLAY_SHA256='f5f37179a8043c9e4451a7a4b867226e8356b7348eff976239ba5d08aeb8717b'
+                        ;;
+                    swift-6.4.1-RELEASE-81bd22795/aarch64)
+                        SWIFT_OVERLAY_SHA256='2ee97a73978013f72759b1256bec9d85472a378c9cd835203179a21ee13887e5'
+                        ;;
+                    *)
+                        echo "::error:: No checksum for '$SWIFT_OVERLAY' on $SWIFT_OVERLAY_ARCHITECTURE"
+                        exit 1
+                        ;;
+                    esac
+
+                    SWIFT_OVERLAY_URL="https://github.com/rarestype/swift/releases/download/\
+                ${SWIFT_OVERLAY}/${SWIFT_OVERLAY%-*}-linux-${SWIFT_OVERLAY_ARCHITECTURE}.tar.gz"
+
+                    echo "swift-overlay-url=$SWIFT_OVERLAY_URL" >> $GITHUB_OUTPUT
+                    echo "swift-overlay-sha256=$SWIFT_OVERLAY_SHA256" >> $GITHUB_OUTPUT
+                fi
 
         -   name: Create installation directory
             shell: bash
@@ -114,6 +156,22 @@ runs:
                 echo "CPLUS_INCLUDE_PATH=${CPLUS_INCLUDE_PATH:+${CPLUS_INCLUDE_PATH}:}\
                 ${SWIFT_TOOLCHAIN}/usr/lib/swift:\
                 ${SWIFT_TOOLCHAIN}/usr/lib/swift/Block" >> "$GITHUB_ENV"
+
+        -   name: Install Swift overlay (Linux)
+            shell: bash
+            if: runner.os == 'Linux' && inputs.swift-overlay != ''
+            env:
+                SWIFT_ID: ${{ steps.parameters.outputs.swift-id }}
+                SWIFT_OVERLAY_URL: ${{ steps.parameters.outputs.swift-overlay-url }}
+                SWIFT_OVERLAY_SHA256: ${{ steps.parameters.outputs.swift-overlay-sha256 }}
+            run: |
+                # the archive replaces files under the toolchain’s `usr`
+                curl -fsSL "$SWIFT_OVERLAY_URL" --output "${HOME}/swift/overlay.tar.gz"
+                echo "${SWIFT_OVERLAY_SHA256}  ${HOME}/swift/overlay.tar.gz" | sha256sum -c -
+                tar -xzf "${HOME}/swift/overlay.tar.gz" -C "${HOME}/swift/${SWIFT_ID}"
+                rm "${HOME}/swift/overlay.tar.gz"
+
+                cat "${HOME}/swift/${SWIFT_ID}/usr/share/swift/rarest-overlay.txt"
 
         ### macOS-specific steps
         ### Please note, on macOS, the `swift-id` does not include the `-osx` suffix!
