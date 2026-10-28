@@ -67,3 +67,53 @@ jobs:
 
             -   name: 💖 Check Swift 💖
                 run: swift --version
+
+    # Apple’s 6.4.1 miscompiles the reproducers that a rarestype/swift release carries, and the
+    # release’s compiler doesn’t, so the job without the overlay checks that they still fail.
+    Overlay:
+        runs-on: ${{ matrix.platform.runner }}
+        name: Ubuntu 24.04 (${{ matrix.platform.architecture }}, ${{ matrix.overlay && 'overlay' || 'no overlay' }})
+        strategy:
+            matrix:
+                platform:
+                    -   architecture: aarch64
+                        runner: ubuntu-24.04-arm
+
+                    -   architecture: x86_64
+                        runner: ubuntu-24.04
+                overlay:
+                    -   'swift-6.4.1-RELEASE-81bd22795'
+                    -   ''
+        steps:
+            -   name: 💖 Checkout repository 💖
+                uses: actions/checkout@v6
+
+            -   name: 💖 Install Swift 💖
+                uses: ./
+                with:
+                    swift-release: "6.4.1-RELEASE"
+                    swift-overlay: ${{ matrix.overlay }}
+
+            -   name: 💖 Checkout reproducers 💖
+                uses: actions/checkout@v6
+                with:
+                    repository: rarestype/swift
+                    ref: swift-6.4.1-RELEASE-81bd22795
+                    path: reproducers
+                    sparse-checkout: Tests/Reproducers
+
+            -   name: 💖 Run reproducers 💖
+                env:
+                    EXPECT_OK: ${{ matrix.overlay != '' }}
+                run: |
+                    for source in reproducers/Tests/Reproducers/*.swift; do
+                        name="$(basename "$source" .swift)"
+                        swiftc -O -parse-as-library "$source" -o "${RUNNER_TEMP}/${name}"
+                        output="$("${RUNNER_TEMP}/${name}" 2>&1)" || output="exited with $?: $output"
+                        if [[ "$output" == ok ]]; then ok=true; else ok=false; fi
+                        if [[ "$ok" != "$EXPECT_OK" ]]; then
+                            echo "::error:: ${name}: ${output}, but expected ok to be ${EXPECT_OK}"
+                            exit 1
+                        fi
+                        echo "${name}: ${output}"
+                    done
