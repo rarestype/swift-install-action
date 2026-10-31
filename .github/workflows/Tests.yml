@@ -117,3 +117,49 @@ jobs:
                         fi
                         echo "${name}: ${output}"
                     done
+
+    # 6.4.2 needs no patches, so this checks that its release installs, SwiftPM included, and that
+    # the reproducers still pass
+    Overlay-6-4-2:
+        runs-on: ${{ matrix.runner }}
+        name: Ubuntu 24.04 (${{ matrix.runner }}, 6.4.2 overlay)
+        strategy:
+            matrix:
+                runner: [ubuntu-24.04, ubuntu-24.04-arm]
+        steps:
+            -   name: 💖 Checkout repository 💖
+                uses: actions/checkout@v6
+
+            -   name: 💖 Install Swift 💖
+                uses: ./
+                with:
+                    swift-release: 6.4.2-RELEASE
+                    swift-overlay: 6.4.2-RELEASE-9b4f7d354
+
+            -   name: 💖 Check SwiftPM 💖
+                run: |
+                    usr="$(dirname "$(dirname "$(readlink -f "$(command -v swift)")")")"
+                    grep -q '^SwiftPM from rarestype/swift-package-manager@' \
+                        "$usr/share/swift/rarest-overlay.txt"
+                    swift build --version
+
+            -   name: 💖 Checkout reproducers 💖
+                uses: actions/checkout@v6
+                with:
+                    repository: rarestype/swift
+                    ref: swift-6.4.2-RELEASE-9b4f7d354
+                    path: reproducers
+                    sparse-checkout: Tests/Reproducers
+
+            -   name: 💖 Run reproducers 💖
+                run: |
+                    for source in reproducers/Tests/Reproducers/*.swift; do
+                        name="$(basename "$source" .swift)"
+                        swiftc -O -parse-as-library "$source" -o "${RUNNER_TEMP}/${name}"
+                        output="$("${RUNNER_TEMP}/${name}" 2>&1)" || output="exited with $?: $output"
+                        if [[ "$output" != ok ]]; then
+                            echo "::error:: ${name}: ${output}, but expected ok"
+                            exit 1
+                        fi
+                        echo "${name}: ${output}"
+                    done
