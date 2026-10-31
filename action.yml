@@ -101,12 +101,6 @@ runs:
                     SWIFT_OVERLAY_ARCHITECTURE="$(uname -m)"
                     # the checksums of every release this action can install, from its notes
                     case "${SWIFT_OVERLAY}/${SWIFT_OVERLAY_ARCHITECTURE}" in
-                    6.4.1-RELEASE-81bd22795/x86_64)
-                        SWIFT_OVERLAY_SHA256='f5f37179a8043c9e4451a7a4b867226e8356b7348eff976239ba5d08aeb8717b'
-                        ;;
-                    6.4.1-RELEASE-81bd22795/aarch64)
-                        SWIFT_OVERLAY_SHA256='2ee97a73978013f72759b1256bec9d85472a378c9cd835203179a21ee13887e5'
-                        ;;
                     6.4.2-RELEASE-9b4f7d354/x86_64)
                         SWIFT_OVERLAY_SHA256='bfc38ea913fb03a429161f9d8c93dd614e104d11ea235a71c0af2c588807bf30'
                         ;;
