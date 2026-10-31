@@ -25,9 +25,9 @@ inputs:
         type: string
 
     swift-overlay:
-        description: "On Linux, a rarestype/swift release, such as '6.4.1-RELEASE-81bd22795' \
-            for the release tagged 'swift-6.4.1-RELEASE-81bd22795', whose compiler and \
-            standard library replace the installed toolchain’s. It must be built for the \
+        description: "On Linux, a rarestype/swift release, such as '6.4.2-RELEASE-9b4f7d354' \
+            for the release tagged 'swift-6.4.2-RELEASE-9b4f7d354', whose compiler, \
+            standard library and SwiftPM replace the installed toolchain’s. It must be built for the \
             toolchain being installed, and this action must know its checksums"
         required: false
         type: string
@@ -106,6 +106,12 @@ runs:
                         ;;
                     6.4.1-RELEASE-81bd22795/aarch64)
                         SWIFT_OVERLAY_SHA256='2ee97a73978013f72759b1256bec9d85472a378c9cd835203179a21ee13887e5'
+                        ;;
+                    6.4.2-RELEASE-9b4f7d354/x86_64)
+                        SWIFT_OVERLAY_SHA256='bfc38ea913fb03a429161f9d8c93dd614e104d11ea235a71c0af2c588807bf30'
+                        ;;
+                    6.4.2-RELEASE-9b4f7d354/aarch64)
+                        SWIFT_OVERLAY_SHA256='8c538bc8be7d5886a4ab1983c2382f7f796c73e84c6af449858c0c9c4c6afb24'
                         ;;
                     *)
                         echo "::error:: No checksum for '$SWIFT_OVERLAY' on $SWIFT_OVERLAY_ARCHITECTURE"

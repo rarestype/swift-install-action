@@ -68,7 +68,7 @@ Please note, on macOS, the `swift-id` does not include a distribution name.
 
 ### Ubuntu 24.04 with a patched compiler
 
-On Linux, `swift-overlay` replaces the installed toolchain’s compiler and standard library with those of a [rarestype/swift](https://github.com/rarestype/swift/releases) release, which carries fixes that Apple hasn’t released yet. Like `swift-release`, it is written without the `swift-` prefix of the release’s tag. The release’s notes list the fixes. A release replaces exactly one Swift version, and the action refuses a release built for another version, as well as one whose checksums it doesn’t know.
+On Linux, `swift-overlay` replaces the installed toolchain’s compiler, standard library and SwiftPM with those of a [rarestype/swift](https://github.com/rarestype/swift/releases) release, which can carry fixes that Apple hasn’t released yet, and whose SwiftPM uses prebuilt swift-syntax when building a single product. Like `swift-release`, it is written without the `swift-` prefix of the release’s tag. The release’s notes list the fixes. A release replaces exactly one Swift version, and the action refuses a release built for another version, as well as one whose checksums it doesn’t know.
 
 ```yaml
 linux:
@@ -79,8 +79,8 @@ linux:
         -   name: Install Swift
             uses: rarestype/swift-install-action@master
             with:
-                swift-release: "6.4.1-RELEASE"
-                swift-overlay: "6.4.1-RELEASE-81bd22795"
+                swift-release: "6.4.2-RELEASE"
+                swift-overlay: "6.4.2-RELEASE-9b4f7d354"
 
         -   name: Check Swift
             run: swift --version
