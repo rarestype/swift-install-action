@@ -83,7 +83,7 @@ jobs:
             -   name: 💖 Install Swift 💖
                 uses: ./
                 with:
-                    swift-release: 6.4.2-RELEASE
+                    swift-release: 6.4.1-RELEASE
                     swift-overlay: 6.4.2-RELEASE-9b4f7d354
 
             -   name: 💖 Check SwiftPM 💖
