@@ -68,14 +68,20 @@ jobs:
             -   name: 💖 Check Swift 💖
                 run: swift --version
 
-    # 6.4.2 needs no patches, so this checks that its release installs, SwiftPM included, and that
-    # the reproducers still pass
+    # these need no patches, so this checks that each release installs, SwiftPM included, and
+    # that the reproducers still pass
     Overlay:
         runs-on: ${{ matrix.runner }}
-        name: Ubuntu 24.04 (${{ matrix.runner }}, 6.4.2 overlay)
+        name: Ubuntu 24.04 (${{ matrix.runner }}, ${{ matrix.overlay }})
         strategy:
             matrix:
                 runner: [ubuntu-24.04, ubuntu-24.04-arm]
+                overlay: [6.4.2-RELEASE-9b4f7d354, 6.4.3-RELEASE-8dfc47a85]
+                include:
+                    -   overlay: 6.4.2-RELEASE-9b4f7d354
+                        release: 6.4.2-RELEASE
+                    -   overlay: 6.4.3-RELEASE-8dfc47a85
+                        release: 6.4.3-RELEASE
         steps:
             -   name: 💖 Checkout repository 💖
                 uses: actions/checkout@v6
@@ -83,8 +89,8 @@ jobs:
             -   name: 💖 Install Swift 💖
                 uses: ./
                 with:
-                    swift-release: 6.4.2-RELEASE
-                    swift-overlay: 6.4.2-RELEASE-9b4f7d354
+                    swift-release: ${{ matrix.release }}
+                    swift-overlay: ${{ matrix.overlay }}
 
             -   name: 💖 Check SwiftPM 💖
                 run: |
@@ -97,7 +103,7 @@ jobs:
                 uses: actions/checkout@v6
                 with:
                     repository: rarestype/swift
-                    ref: swift-6.4.2-RELEASE-9b4f7d354
+                    ref: swift-${{ matrix.overlay }}
                     path: reproducers
                     sparse-checkout: Tests/Reproducers
 

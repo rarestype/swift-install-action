@@ -79,8 +79,8 @@ linux:
         -   name: Install Swift
             uses: rarestype/swift-install-action@master
             with:
-                swift-release: "6.4.2-RELEASE"
-                swift-overlay: "6.4.2-RELEASE-9b4f7d354"
+                swift-release: "6.4.3-RELEASE"
+                swift-overlay: "6.4.3-RELEASE-8dfc47a85"
 
         -   name: Check Swift
             run: swift --version
